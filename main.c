@@ -220,7 +220,7 @@ void rotate(struct coord* lastone) {
     }
     for(int i = 0; i < 4; i++) {
         for(int j = 0; j < 4; j++) {
-            extra[j][i] = lastone->shapeofit[i][j];
+            extra[j][lastone->edges[2]-i-1] = lastone->shapeofit[i][j];
         }
     }
     for(int i = 0; i < 4; i++) {
@@ -247,8 +247,8 @@ void rotate(struct coord* lastone) {
             lastone->shapeofit[i][j] = extra[i][j];
             if(extra[i][j] == 1) {
                 if(j < left) left = j;
-                if(j > right) right = j;
-                if(i > down) down = i+1;
+                if(j+1 > right) right = j+1;
+                if(i+1 > down) down = i+1;
             }
         }
     }
