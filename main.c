@@ -12,7 +12,7 @@ char *tetrisascii=
     "   | $$| $$$$$$$$  | $$    | $$  \\__/| $$|  $$$$$$\n"
     "   | $$| $$_____/  | $$ /$$| $$      | $$ \\____  $$\n"
     "   | $$|  $$$$$$$  |  $$$$/| $$      | $$ /$$$$$$$/\n"
-    "   |__/ \\_______/   \\____/ |__/      |__/|_______/\n\n\n ";
+    "   |__/ \\_______/   \\____/ |__/      |__/|_______/\n\n\n";
 
 #define WIDTH 10
 #define HEIGHT 20
@@ -57,6 +57,7 @@ int shapesleftrightheight[11][3] = {
 
 int totalpoints=0;
 int highestpoint=0;
+int nextTetromino = -1;
 
 struct coord{
     int X;
@@ -72,7 +73,7 @@ void displayboard() {
     printf(tetrisascii);
     printf("\t\u250F");
     for (int i = 0; i < WIDTH * 2; i++) printf("\u2501");
-    printf("\u2513\tPøIиτs: %d\tᕼIGᕼEᔕT: %d",totalpoints,highestpoint);
+    printf("\u2513\tPøIиτs: %d\t    ᕼIGᕼEᔕT: %d",totalpoints,highestpoint);
     printf("\n ");
 
     for (int i = 0; i < HEIGHT; i++) {
@@ -80,7 +81,28 @@ void displayboard() {
         for (int j = 0; j < WIDTH; j++) {
             printf("%s ", grid[i][j]); 
         }
-        printf("\u2503\n ");
+        printf("\u2503");
+        
+        // showing the upcoming lil piece
+        if (i == 3) printf("\t\t    Nҽxƚ");
+        if (i == 4 || i == 9){
+            printf("\t\t%s",(i==4 ? "\u2546" : "\u2544"));
+            for(int k = 0; k < 10; k++) {
+                printf("\u254D");
+            }
+            printf("%s", (i==4 ? "\u2545" : "\u2543"));
+        }
+        else if (i >= 5 && i < 9) {
+            printf("\t\t\u2507");
+            for(int k = 0; k < (4-shapesleftrightheight[nextTetromino][1])+(shapesleftrightheight[nextTetromino][1]%2); k++) putchar(' ');
+            for (int k = 0; k < 4; k++) {
+
+                printf("%s ", (i-((4-shapesleftrightheight[nextTetromino][2])/2)-5>=0 ? (shapes[nextTetromino][i-((4-shapesleftrightheight[nextTetromino][2])/2)-5][k] == 1 ? (nextTetromino==10 ? BOMB : blockColors[nextTetromino % 7]) : " ") : " "));
+            }
+            printf("%s\u254F", (nextTetromino==10 ? "\033[2D" : ""));
+        }
+        
+        printf("\n ");
     }
     printf("\t\u2517");
     for (int i = 0; i < WIDTH * 2; i++) printf("\u2501");
@@ -323,7 +345,7 @@ extern int restore_terminal();
 
 #include "playgame.h"
 
-int customgetline(char input[200]){
+int customgetline(char input[]){
     char onechar;
     int lenfornow=0;
     do{
@@ -335,9 +357,56 @@ int customgetline(char input[200]){
     return lenfornow;
 }
 
+void slowlyoutput(char *outputthis){
+    int ind=0;
+    char onecharacter[1];
+    while(outputthis[ind]!='\0' && outputthis[ind]!=-1){
+        onecharacter[0]=outputthis[ind++];
+        write(1,onecharacter,1);
+        usleep(70000);
+    }
+    return;
+}
+
+void dialogforfun(){
+    int lenfordialog;
+    char inputfordialog[200];
+    printf("\033[2J\033[H");
+    printf(tetrisascii);
+
+    slowlyoutput(">\033[36mAre you ready for a challenge?\033[0m\n");
+    write(1,">",1);
+    do{
+        lenfordialog=customgetline(inputfordialog);
+        if(lenfordialog==1 && inputfordialog[0]=='?'){
+            write(1,"\n[\033[36mYES\033[0m] || [\033[36mNO\033[0m]\n",32);
+            write(1,"\n\n>",3);
+        }
+        else if(lenfordialog==3 && tolower(inputfordialog[0])=='y' && tolower(inputfordialog[1])=='e' && tolower(inputfordialog[2])=='s'){
+            slowlyoutput(">\033[36mAlrightt, Let's see what you got >:)\033[0m\0");
+            sleep(1);
+            return;
+        }
+        else if(lenfordialog==2 && tolower(inputfordialog[0])=='n' && tolower(inputfordialog[1])=='o'){
+            slowlyoutput(">\033[36mI knew you are a coward!\033[0m");
+            exit(0);
+        }
+        else{
+            slowlyoutput(">\033[36mUhhh.. write \033[0m[\033[36m?\033[0m]\033[36m to see what you can write...\033[0m\n");
+            write(1,">",2);
+        }
+    }
+    while(1);
+
+}
+
 int main() {
     char input[200];
     int lengthofinput=-1;
+
+    dialogforfun();
+
+
     while(startinggame()==-1){
         highestpoint=(totalpoints > highestpoint ? totalpoints : highestpoint);
         totalpoints=0;
@@ -356,7 +425,7 @@ int main() {
                 break;
             }
             else{
-                printf("\033[31mYou are dumb for sure...\n\n\033[0m\nWanna lose again? [YES/NO]:");
+                printf("\033[31m\nYou are dumb for sure...\n\033[0m\nWanna lose again? [YES/NO]:");
             }
         }
         while(1);

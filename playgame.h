@@ -1,14 +1,34 @@
 int startinggame(){
     char ignorekey=-2;
     int gameactive=1,hitground=0,defaultspeed;
+
     struct coord lastone;
     printf("\033[?25l\033[2J");
     initboard();
     set_nonblocking();
     init_terminal();
+
+    nextTetromino = rand() % 11;
+    
+
     while(gameactive){
         srand(time(NULL));
-        int randomTetromino = rand() % 11;
+
+        ignorekey = -2;
+        while(setup_and_read() != -1);
+
+
+        int randomTetromino = nextTetromino;
+
+        while (1) {
+            nextTetromino = rand() % 11;
+            if (randomTetromino == nextTetromino) {
+                continue;
+            } else {
+                break;
+            }
+        }
+
         lastone.X=WIDTH/2-(shapesleftrightheight[randomTetromino][1]/2);
         lastone.Y=0;
         lastone.type=randomTetromino;
@@ -31,6 +51,11 @@ int startinggame(){
         while(!hitground){
             defaultspeed=300000;
             char current=setup_and_read();
+
+            if(current == ignorekey){
+                ignorekey = -2;
+            }
+
             while(current==ignorekey){
                 current=setup_and_read();
                 ignorekey=-2;
@@ -53,6 +78,15 @@ int startinggame(){
                 defaultspeed=50000;
                 if(rotate(&lastone)==-1){
                     ignorekey='r';
+                    defaultspeed=0;
+                }
+            }
+            else if(tolower(current)=='s'){
+                // Soft drop - increase falling speed
+                defaultspeed=50000;
+                if(movedown(&lastone)==-1){
+                    hitground=1;
+                } else {
                     defaultspeed=0;
                 }
             }
