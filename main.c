@@ -82,8 +82,7 @@ void displayboard() {
     }
     printf("\t\u2517");
     for (int i = 0; i < WIDTH * 2; i++) printf("\u2501");
-    printf("\u251A");
-    printf("\n");
+    printf("\u251A\n");
 }
 
 int placeshapes(int type) {
@@ -122,7 +121,6 @@ int movedown(struct coord* lastone){
     if(lastone->type==10){
         color = BOMB;
     }
-    usleep(300000);
     if(lastone->edges[2]+lastone->Y==HEIGHT) return -1;
     for(int i=0;i<4;i++){
         for(int j=0;j<4;j++){
@@ -150,7 +148,6 @@ int moveleft(struct coord* lastone){
     if(lastone->type==10){
         color = BOMB;
     }
-    usleep(50000);
     if(lastone->edges[0]+lastone->X<=0) return -1;
     for(int i=0;i<4;i++){
         for(int j=0;j<4;j++){
@@ -179,7 +176,6 @@ int moveright(struct coord* lastone){
     if(lastone->type==10){
         color = BOMB;
     }
-    usleep(50000);
     if(lastone->edges[1]+lastone->X>=WIDTH) return -1;
     for(int i=3;i>=0;i--){
         for(int j=3;j>=0;j--){
@@ -211,15 +207,18 @@ void movelinesdown(int height){
         }
     }
     while(!end){
-        end=0;
-        for(int i=HEIGHT-1;i>=0;i--){
+        end=1;
+        for(int i=HEIGHT-2;i>=0;i--){
             for (int j=0;j<WIDTH;j++){
-                if((grid[i][j-1]==" " || j-1<0) && (grid[i][j+1]==" " || j+1>=WIDTH) && grid[i+1][j]==" " && i+1<HEIGHT){
+                if((grid[i][j-1]==" " || j-1<0) && (grid[i][j+1]==" " || j+1>=WIDTH) && grid[i+1][j]==" " && i+1<HEIGHT && grid[i][j]!=" "){
                     grid[i+1][j]=grid[i][j];
-                    end=1;
+                    grid[i][j]=" ";
+                    end=0;
                 }
             }
         }
+        displayboard();
+        usleep(300000);
     }
 }
 
@@ -245,8 +244,7 @@ void checkforlines(){
     }
 }
 
-void rotate(struct coord* lastone) {
-    usleep(30000);
+int rotate(struct coord* lastone) {
     char *color = blockColors[lastone->type % 7];
     if(lastone->type==10){
         color = BOMB;
@@ -279,7 +277,7 @@ void rotate(struct coord* lastone) {
                             }
                         }
                     }
-                    return;
+                    return -1;
                 }
             }
         }
@@ -304,15 +302,16 @@ void rotate(struct coord* lastone) {
             }
         }
     }
+    return 0;
 }
 
 void boomit(struct coord* lastone){
-    movelinesdown(lastone->Y);
     totalpoints+=10;
     for(int i=0;i<HEIGHT;i++){
         if(grid[i][lastone->X]!=" ") totalpoints+=5;
         grid[i][lastone->X]=" ";
     }
+    movelinesdown(lastone->Y);
 }
 
 extern int set_nonblocking();
@@ -320,66 +319,27 @@ extern char setup_and_read();
 extern int init_terminal();
 extern int restore_terminal();
 
-int main() {
-    int gameactive=1,hitground=0;
-    struct coord lastone;
-    printf("\033[2J");
-    initboard();
-    set_nonblocking();
-    init_terminal();
-    while(gameactive){
-        srand(time(NULL));
-        int randomTetromino = rand() % 11;
-        lastone.X=WIDTH/2-(shapesleftrightheight[randomTetromino][1]/2);
-        lastone.Y=0;
-        lastone.type=randomTetromino;
-        for(int i=0;i<4;i++){
-            for(int j=0;j<4;j++){
-                lastone.shapeofit[i][j]=shapes[randomTetromino][i][j];
-            }
-        }
-        for(int i=0;i<3;i++){
-            lastone.edges[i]=shapesleftrightheight[randomTetromino][i];
-        }
+#include "playgame.h"
 
-        if(placeshapes(randomTetromino)==-1){
-            gameactive=0;
-            break;
-        }
-        displayboard();
-        hitground=0;
-
-        
-        while(!hitground){
-            char current=setup_and_read();
-            if(current == -1){
-                if(movedown(&lastone)==-1){
-                    hitground=1;
-                }
-            }
-            else if(tolower(current)=='d'){
-                moveright(&lastone);
-            }
-            else if(tolower(current)=='a'){
-                moveleft(&lastone);
-            }
-            else if(tolower(current)=='r'){
-                rotate(&lastone);
-            }
-            else if(current==3){ //Ctrl+C
-                restore_terminal();
-                return 0;
-            }
-            displayboard();
-        }
-        if(lastone.type==10) boomit(&lastone);
-        if(lastone.Y==0){
-            gameactive=0;
-            break;
-        }
-        checkforlines();
+int customgetline(char* input){
+    char onechar;
+    int lenfornow=0;
+    while(onechar=getchar() && onechar!='\n' && onechar!=EOF){
+        lenfornow++;
+        *(input++)=onechar;
+        printf("%c\n",onechar);
     }
-    restore_terminal();
-    printf("lil bro learn how to play!");
+    return lenfornow;
+}
+
+int main() {
+    char input[200];
+    int lengthofinput;
+    while(startinggame()==-1){
+        printf("\033[?25h");
+        restore_terminal();
+        printf("lil bro learn how to play!\nWanna lose again?");
+        return 0;
+    }
     return 0;
 }
