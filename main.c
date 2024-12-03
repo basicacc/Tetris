@@ -56,6 +56,7 @@ int shapesleftrightheight[11][3] = {
 };
 
 int totalpoints=0;
+int highestpoint=0;
 
 struct coord{
     int X;
@@ -66,11 +67,12 @@ struct coord{
 };
 
 void displayboard() {
+    highestpoint = (highestpoint > totalpoints ? highestpoint : totalpoints);
     printf("\033[2J\033[H");
     printf(tetrisascii);
     printf("\t\u250F");
     for (int i = 0; i < WIDTH * 2; i++) printf("\u2501");
-    printf("\u2513\tPøIиτs: %d",totalpoints);
+    printf("\u2513\tPøIиτs: %d\tᕼIGᕼEᔕT: %d",totalpoints,highestpoint);
     printf("\n ");
 
     for (int i = 0; i < HEIGHT; i++) {
@@ -337,6 +339,8 @@ int main() {
     char input[200];
     int lengthofinput=-1;
     while(startinggame()==-1){
+        highestpoint=(totalpoints > highestpoint ? totalpoints : highestpoint);
+        totalpoints=0;
         printf("\033[?25h");
         restore_terminal();
         printf("Lil bro, you need to delete the game HAHAHAHAHA\nWanna lose again? [YES/NO]:");
