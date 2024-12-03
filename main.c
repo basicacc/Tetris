@@ -321,25 +321,41 @@ extern int restore_terminal();
 
 #include "playgame.h"
 
-int customgetline(char* input){
+int customgetline(char input[200]){
     char onechar;
     int lenfornow=0;
-    while(onechar=getchar() && onechar!='\n' && onechar!=EOF){
-        lenfornow++;
-        *(input++)=onechar;
-        printf("%c\n",onechar);
+    do{
+        onechar=getchar();
+        input[lenfornow++]=onechar;
     }
+    while(onechar!='\n' && onechar!=EOF);
+    input[lenfornow--]='\0';
     return lenfornow;
 }
 
 int main() {
     char input[200];
-    int lengthofinput;
+    int lengthofinput=-1;
     while(startinggame()==-1){
         printf("\033[?25h");
         restore_terminal();
-        printf("lil bro learn how to play!\nWanna lose again?");
-        return 0;
+        printf("Lil bro, you need to delete the game HAHAHAHAHA\nWanna lose again? [YES/NO]:");
+        do{
+            lengthofinput=customgetline(input);
+            if(lengthofinput==2 && tolower(input[0])=='n' && tolower(input[1])=='o'){
+                printf("Bye bye Lil bro!!!");
+                return 0;
+            }
+            else if(lengthofinput==3 && tolower(input[0])=='y' && tolower(input[1])=='e' && tolower(input[2])=='s'){
+                printf("Hmm interesting..\n");
+                sleep(1);
+                break;
+            }
+            else{
+                printf("\033[31mYou are dumb for sure...\n\n\033[0m\nWanna lose again? [YES/NO]:");
+            }
+        }
+        while(1);
     }
     return 0;
 }
