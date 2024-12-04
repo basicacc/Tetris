@@ -3,10 +3,10 @@ int startinggame(){
     int gameactive=1,hitground=0,defaultspeed;
 
     struct coord lastone;
-    printf("\033[?25l\033[2J");
-    initboard();
-    set_nonblocking();
-    init_terminal();
+    printf("\033[?25l\033[2J"); //hide cursor and clear screen
+    initboard();    //clear board
+    init_terminal();    //raw mode
+    set_nonblocking();  //so SIGINT dont cause issue
 
     nextTetromino = rand() % 11;
     
@@ -15,12 +15,12 @@ int startinggame(){
         srand(time(NULL));
 
         ignorekey = -2;
-        while(setup_and_read() != -1);
+        while(setup_and_read() != -1); //to fix input issue
 
 
         int randomTetromino = nextTetromino;
 
-        while (1) {
+        while (1) { //not same block in a row
             nextTetromino = rand() % 11;
             if (randomTetromino == nextTetromino) {
                 continue;
@@ -41,7 +41,7 @@ int startinggame(){
             lastone.edges[i]=shapesleftrightheight[randomTetromino][i];
         }
 
-        if(placeshapes(randomTetromino)==-1){
+        if(placeshapes(randomTetromino)==-1){   //game end
             return -1;
         }
         displayboard();
@@ -52,14 +52,10 @@ int startinggame(){
             defaultspeed=300000;
             char current=setup_and_read();
 
-            if(current == ignorekey){
-                ignorekey = -2;
-            }
-
             while(current==ignorekey){
                 current=setup_and_read();
-                ignorekey=-2;
             }
+
             if(tolower(current)=='d'){
                 defaultspeed=150000;
                 if(moveright(&lastone)==-1){
@@ -82,7 +78,7 @@ int startinggame(){
                 }
             }
             else if(tolower(current)=='s'){
-                // Soft drop - increase falling speed
+                //increase falling speed
                 defaultspeed=50000;
                 if(movedown(&lastone)==-1){
                     hitground=1;
@@ -96,6 +92,7 @@ int startinggame(){
                 return -1;
             }
             else{
+                ignorekey=(current!=-1 ? current : -2);
                 if(movedown(&lastone)==-1){
                     hitground=1;
                     defaultspeed=50000;

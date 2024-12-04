@@ -100,10 +100,9 @@ void movelinesdown(int height){
                         grid[i+1][k]=grid[i][k];
                         grid[i][k]=" ";
                     }
-                    displayboard();
-                    usleep(300000);
                     startofpiece=-1;
                     endofpiece=-1;
+                    end=0;
                 }
                 if((grid[i][j-1]==" " || j-1<0) && (grid[i][j+1]==" " || j+1>=WIDTH) && grid[i+1][j]==" " && i+1<HEIGHT && grid[i][j]!=" "){
                     for(int k=1;k<HEIGHT-1;k++){
@@ -111,12 +110,10 @@ void movelinesdown(int height){
                             grid[i+k][j]=grid[i+k-1][j];
                             grid[i+k-1][j]=" ";
                             end=0;
-                            displayboard();
-                            usleep(100000);
                         }
                     }
                 }
-                else if(startofpiece==-1 && (grid[i][j-1]==" " || j-1<0) && (grid[i][j+1]!=" " || j+1>=WIDTH) && grid[i+1][j]!=" " && i+1<HEIGHT && grid[i][j]!=" "){
+                else if(startofpiece==-1 && (grid[i][j-1]==" " || j-1<0) && (grid[i][j+1]!=" " || j+1>=WIDTH) && grid[i+1][j]==" " && i+1<HEIGHT && grid[i][j]!=" "){
                     endofpiece=-1;
                     startofpiece=j;
                 }
@@ -131,6 +128,7 @@ void movelinesdown(int height){
                for(int k=startofpiece;k<=endofpiece;k++){
                     grid[i+1][k]=grid[i][k];
                     grid[i][k]=" ";
+                    end=0;
                 } 
                 displayboard();
                 usleep(300000);
@@ -141,7 +139,7 @@ void movelinesdown(int height){
     }
 }
 
-void checkforlines(){
+void checkforlines(){   //if there is a empty line
     int wrong=0,nonefound=0;
     while(!nonefound){
         nonefound=1;
@@ -224,7 +222,7 @@ int rotate(struct coord* lastone) {
     return 0;
 }
 
-void boomit(struct coord* lastone){
+void boomit(struct coord* lastone){ //bomb destroys vertical and horizontal
     totalpoints+=10;
     for(int i=0;i<HEIGHT;i++){
         if(grid[i][lastone->X]!=" ") totalpoints+=5;

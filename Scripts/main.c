@@ -40,10 +40,10 @@ int shapes[11][4][4] = {
     {{1, 1, 0, 0}, {1, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}},
     {{1, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}, {0, 0, 0, 0}} //bomb
 };
-
-int shapesleftrightheight[11][3] = {
-    {1,2,4},
-    {0,3,2},
+//default
+int shapesleftrightheight[11][3] = { //left = how many zeros on left
+    {1,2,4},                         //right = last and most 1s till end
+    {0,3,2},                         //height = max amount of 1s on a line
     {0,3,2},
     {0,3,2},
     {0,2,2},
@@ -54,11 +54,13 @@ int shapesleftrightheight[11][3] = {
     {0,2,2},
     {0,1,1}
 };
-
-int totalpoints=0;
+//To display points
+int totalpoints=0; 
 int highestpoint=0;
+
 int nextTetromino = -1;
 
+//To remember the latest properties of moving block
 struct coord{
     int X;
     int Y;
@@ -68,14 +70,20 @@ struct coord{
 };
 
 void displayboard() {
+    //Updating highestpoint everytime called
     highestpoint = (highestpoint > totalpoints ? highestpoint : totalpoints);
-    printf("\033[2J\033[H");
-    printf(tetrisascii);
+    
+    printf("\033[2J\033[H"); //clear screen and put cursor on "Home" (top left)
+    
+    printf(tetrisascii); //Cool looking ascii art
+    
+    //Whole display of everything here:
     printf("\t\u250F");
     for (int i = 0; i < WIDTH * 2; i++) printf("\u2501");
     printf("\u2513\tPøIиτs: %d\t    ᕼIGᕼEᔕT: %d",totalpoints,highestpoint);
     printf("\n ");
 
+    //top straight line
     for (int i = 0; i < HEIGHT; i++) {
         printf("\t\u2503"); 
         for (int j = 0; j < WIDTH; j++) {
@@ -83,7 +91,7 @@ void displayboard() {
         }
         printf("\u2503");
         
-        // showing the upcoming lil piece
+        //Showing the upcoming piece
         if (i == 3) printf("\t\t    Nҽxƚ");
         if (i == 4 || i == 9){
             printf("\t\t%s",(i==4 ? "\u2546" : "\u2544"));
@@ -92,6 +100,7 @@ void displayboard() {
             }
             printf("%s", (i==4 ? "\u2545" : "\u2543"));
         }
+        //to display next
         else if (i >= 5 && i < 9) {
             printf("\t\t\u2507");
             for(int k = 0; k < (4-shapesleftrightheight[nextTetromino][1])+(shapesleftrightheight[nextTetromino][1]%2); k++) putchar(' ');
@@ -99,19 +108,21 @@ void displayboard() {
 
                 printf("%s ", (i-((4-shapesleftrightheight[nextTetromino][2])/2)-5>=0 ? (shapes[nextTetromino][i-((4-shapesleftrightheight[nextTetromino][2])/2)-5][k] == 1 ? (nextTetromino==10 ? BOMB : blockColors[nextTetromino % 7]) : " ") : " "));
             }
-            printf("%s\u254F", (nextTetromino==10 ? "\033[2D" : ""));
+            printf("%s\u2507", (nextTetromino==10 ? "\033[2D" : ""));
         }
         
         printf("\n ");
     }
+    //down straight line
     printf("\t\u2517");
     for (int i = 0; i < WIDTH * 2; i++) printf("\u2501");
-    printf("\u251A\n");
+    printf("\u251A\nEnd game: Ctrl+C\n\n");
 }
 
 int placeshapes(int type) {
+    //choose color (also default shape)
     char *color = blockColors[type % 7];
-    if(type==10){
+    if(type==10){ //check if it is a bomb
         color = BOMB;
     }
     for (int i = 0; i < 4; i++) {
@@ -119,18 +130,16 @@ int placeshapes(int type) {
             if (shapes[type][i][j] == 1) {
                 if(grid[i][j+(WIDTH/2)-(shapesleftrightheight[type][1]/2)]!=" "){
                     displayboard();
-                    return -1;
+                    return -1;  //If there is a shape blocking us return -1
                 }
-                if (i < HEIGHT && j < WIDTH) { 
-                    grid[i][j+(WIDTH/2)-(shapesleftrightheight[type][1]/2)] = color; 
-                }
+                grid[i][j+(WIDTH/2)-(shapesleftrightheight[type][1]/2)] = color; //place block
             }
         }
     }
     return 0;
 }
 
-void initboard() {
+void initboard() { //clear board
     for (int i = 0; i < HEIGHT; i++) {
         for (int j = 0; j < WIDTH; j++) {
             grid[i][j] = " "; 
@@ -142,15 +151,15 @@ void initboard() {
 
 
 
-extern int set_nonblocking();
-extern char setup_and_read();
-extern int init_terminal();
-extern int restore_terminal();
+extern int set_nonblocking();   //To be able to read without SIGINT causing problem
+extern char setup_and_read();   //Select() and Read() used to read 1 character (timeout = 0.1)
+extern int init_terminal();     //set terminal raw mode (non_canoncial and non_echo)
+extern int restore_terminal();  //reset to default
 
 #include "movements.h"
 #include "playgame.h"
 
-int customgetline(char input[]){
+int customgetline(char input[]){    //better than default getline()
     char onechar;
     int lenfornow=0;
     do{
@@ -162,7 +171,7 @@ int customgetline(char input[]){
     return lenfornow;
 }
 
-void slowlyoutput(char *outputthis){
+void slowlyoutput(char *outputthis){    //to make cool dialog
     int ind=0;
     char onecharacter[1];
     while(outputthis[ind]!='\0' && outputthis[ind]!=-1){
@@ -173,7 +182,7 @@ void slowlyoutput(char *outputthis){
     return;
 }
 
-void dialogforfun(){
+void dialogforfun(){    //as named just a dialog for fun
     int lenfordialog;
     char inputfordialog[200];
     printf("\033[2J\033[H");
@@ -202,7 +211,6 @@ void dialogforfun(){
         }
     }
     while(1);
-
 }
 
 int main() {
@@ -211,15 +219,17 @@ int main() {
 
     dialogforfun();
 
-    while(startinggame()==-1){
+    while(startinggame()==-1){  //Till game is active (Always return -1)
         highestpoint=(totalpoints > highestpoint ? totalpoints : highestpoint);
         totalpoints=0;
-        restore_terminal();
+        restore_terminal(); //restoring so we can accept input in tradition way
+
+        //check if player wants to play again.
         slowlyoutput(">\033[36mAs expected.. Another loser!\033[0m\n>\033[36mWanna try and lose again? \033[0m[\033[36mYES\033[0m/\033[36mNO\033[0m]\n>\033[?25h");
         do{
             lengthofinput=customgetline(input);
             if(lengthofinput==2 && tolower(input[0])=='n' && tolower(input[1])=='o'){
-                slowlyoutput("\033[?25l>\033[36mBye bye Lil bro!!!\033[0m\033[?25h");
+                slowlyoutput("\033[?25l>\033[36mBye bye, see you later!!!\033[0m\033[?25h");
                 return 0;
             }
             else if(lengthofinput==3 && tolower(input[0])=='y' && tolower(input[1])=='e' && tolower(input[2])=='s'){

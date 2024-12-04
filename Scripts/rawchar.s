@@ -31,11 +31,10 @@ section .bss
 section .text
     global init_terminal      ; Note the underscore prefix for C compatibility
     global restore_terminal
-    global set_nonblocking
     global setup_and_read
+    global set_nonblocking
 
 ; Initialize terminal settings
-; C prototype: int init_terminal(void);
 init_terminal:
     push ebp
     mov ebp, esp
@@ -97,7 +96,6 @@ init_terminal:
     ret
 
 ; Restore terminal settings
-; C prototype: int restore_terminal(void);
 restore_terminal:
     push ebp
     mov ebp, esp
@@ -127,7 +125,6 @@ restore_terminal:
     ret
 
 ; Set non-blocking mode
-; C prototype: int set_nonblocking(void);
 set_nonblocking:
     push ebp
     mov ebp, esp
@@ -165,7 +162,6 @@ set_nonblocking:
     ret
 
 ; Read character with timeout
-; C prototype: int setup_and_read(void);
 setup_and_read:
     push ebp
     mov ebp, esp
