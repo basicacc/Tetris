@@ -190,8 +190,8 @@ setup_and_read:
     mov eax, 142        ; sys_select
     mov ebx, 1          ; nfds
     mov ecx, fd_set     ; read fds
-    xor edx, edx        ; write fds (NULL)
-    xor esi, esi        ; error fds (NULL)
+    xor edx, edx        ; write fds
+    xor esi, esi        ; error fds
     mov edi, timeval    ; timeout
     int 0x80
 
