@@ -140,209 +140,14 @@ void initboard() {
 
 
 
-int movedown(struct coord* lastone){
-    char *color = blockColors[lastone->type % 7];
-    if(lastone->type==10){
-        color = BOMB;
-    }
-    if(lastone->edges[2]+lastone->Y==HEIGHT) return -1;
-    for(int i=0;i<4;i++){
-        for(int j=0;j<4;j++){
-            if(lastone->shapeofit[i][j]==1 && (lastone->shapeofit[i+1][j]!=1 || i+1>=4)){
-                if(grid[lastone->Y+i+1][lastone->X+j]!=" ") return -1;
-            }
-        }
-    }
-    for(int i=0;i<4;i++){
-        for(int j=0;j<4;j++){
-            if(lastone->shapeofit[i][j]==1){
-                if(lastone->shapeofit[i-1][j]!=1 || i-1<0){
-                    grid[lastone->Y+i][lastone->X+j]=" ";
-                }
-                grid[lastone->Y+i+1][lastone->X+j]=color;
-            }
-        }
-    }
-    lastone->Y++;
-    return 0;
-}
 
-int moveleft(struct coord* lastone){
-    char *color = blockColors[lastone->type % 7];
-    if(lastone->type==10){
-        color = BOMB;
-    }
-    if(lastone->edges[0]+lastone->X<=0) return -1;
-    for(int i=0;i<4;i++){
-        for(int j=0;j<4;j++){
-            if(lastone->shapeofit[i][j]==1){
-                if(grid[lastone->Y+i][lastone->X+j-1]!=" ") return -1;
-                else break;
-            }
-        }
-    }
-    for(int i=0;i<4;i++){
-        for(int j=0;j<4;j++){
-            if(lastone->shapeofit[i][j]==1){
-                if(lastone->shapeofit[i][j+1]!=1 || j+1>WIDTH){
-                    grid[lastone->Y+i][lastone->X+j]=" ";
-                }
-                grid[lastone->Y+i][lastone->X+j-1]=color;
-            }
-        }
-    }
-    lastone->X--;
-    return 0;
-}
-
-int moveright(struct coord* lastone){
-    char *color = blockColors[lastone->type % 7];
-    if(lastone->type==10){
-        color = BOMB;
-    }
-    if(lastone->edges[1]+lastone->X>=WIDTH) return -1;
-    for(int i=3;i>=0;i--){
-        for(int j=3;j>=0;j--){
-            if(lastone->shapeofit[i][j]==1){
-                if(grid[lastone->Y+i][lastone->X+j+1]!=" ") return -1;
-                else break;
-            }
-        }
-    }
-    for(int i=0;i<4;i++){
-        for(int j=0;j<4;j++){
-            if(lastone->shapeofit[i][j]==1){
-                if(lastone->shapeofit[i][j-1]!=1 || j-1<0){
-                    grid[lastone->Y+i][lastone->X+j]=" ";
-                }
-                grid[lastone->Y+i][lastone->X+j+1]=color;
-            }
-        }
-    }
-    lastone->X++;
-    return 0;
-}
-
-void movelinesdown(int height){
-    int end=0;
-    for(int i=height;i>0;i--){
-        for (int j=0;j<WIDTH;j++){
-            grid[i][j]=grid[i-1][j];
-        }
-    }
-    while(!end){
-        end=1;
-        for(int i=HEIGHT-2;i>=0;i--){
-            for (int j=0;j<WIDTH;j++){
-                if((grid[i][j-1]==" " || j-1<0) && (grid[i][j+1]==" " || j+1>=WIDTH) && grid[i+1][j]==" " && i+1<HEIGHT && grid[i][j]!=" "){
-                    grid[i+1][j]=grid[i][j];
-                    grid[i][j]=" ";
-                    end=0;
-                }
-            }
-        }
-        displayboard();
-        usleep(300000);
-    }
-}
-
-void checkforlines(){
-    int wrong=0,nonefound=0;
-    while(!nonefound){
-        nonefound=1;
-        for (int i=HEIGHT-1;i>=0;i--){
-            wrong=0;
-            for(int j=0;j<WIDTH;j++){
-                if(grid[i][j]==" "){
-                    wrong=1;
-                    break;
-                }
-            }
-            if(!wrong){
-                movelinesdown(i);
-                nonefound=0;
-                totalpoints+=10;
-                break;
-            }
-        }
-    }
-}
-
-int rotate(struct coord* lastone) {
-    char *color = blockColors[lastone->type % 7];
-    if(lastone->type==10){
-        color = BOMB;
-    }
-    int extra[4][4] = {0}; 
-    int left=4, right=-1, down=-1;
-    for(int i=0; i<4; i++) {
-        for(int j=0; j<4; j++) {
-            if(lastone->shapeofit[i][j] == 1) {
-                grid[lastone->Y+i][lastone->X+j]=" ";
-            }
-        }
-    }
-    for(int i=0; i<4; i++) {
-        for(int j=0; j<4; j++) {
-            extra[j][lastone->edges[2]-i-1] = lastone->shapeofit[i][j];
-        }
-    }
-    for(int i=0; i<4; i++) {
-        for(int j=0; j<4; j++) {
-            if(extra[i][j] == 1) {
-
-                if(lastone->X + j >= WIDTH || lastone->X + j < 0 || 
-                   lastone->Y + i >= HEIGHT || 
-                   grid[lastone->Y + i][lastone->X + j] != " ") {
-                    for(int y = 0; y < 4; y++) {
-                        for(int x = 0; x < 4; x++) {
-                            if(lastone->shapeofit[y][x] == 1) {
-                                grid[lastone->Y + y][lastone->X + x] = color;
-                            }
-                        }
-                    }
-                    return -1;
-                }
-            }
-        }
-    }
-    for(int i=0; i<4; i++) {
-        for(int j=0; j<4; j++) {
-            lastone->shapeofit[i][j]=extra[i][j];
-            if(extra[i][j] == 1) {
-                if(j < left) left = j;
-                if(j+1>right) right = j+1;
-                if(i+1>down) down = i+1;
-            }
-        }
-    }
-    lastone->edges[0]=left;
-    lastone->edges[1]=right;
-    lastone->edges[2]=down;
-    for(int i=0; i<4; i++) {
-        for(int j=0; j<4; j++) {
-            if(lastone->shapeofit[i][j] == 1) {
-                grid[lastone->Y+i][lastone->X+j] = color;
-            }
-        }
-    }
-    return 0;
-}
-
-void boomit(struct coord* lastone){
-    totalpoints+=10;
-    for(int i=0;i<HEIGHT;i++){
-        if(grid[i][lastone->X]!=" ") totalpoints+=5;
-        grid[i][lastone->X]=" ";
-    }
-    movelinesdown(lastone->Y);
-}
 
 extern int set_nonblocking();
 extern char setup_and_read();
 extern int init_terminal();
 extern int restore_terminal();
 
+#include "movements.h"
 #include "playgame.h"
 
 int customgetline(char input[]){
@@ -374,26 +179,26 @@ void dialogforfun(){
     printf("\033[2J\033[H");
     printf(tetrisascii);
 
-    slowlyoutput(">\033[36mAre you ready for a challenge?\033[0m\n");
-    write(1,">",1);
+    slowlyoutput("\033[?25l>\033[36mAre you ready for a challenge?\033[0m\n");
+    write(1,">\033[?25h",7);
     do{
         lenfordialog=customgetline(inputfordialog);
         if(lenfordialog==1 && inputfordialog[0]=='?'){
             write(1,"\n[\033[36mYES\033[0m] || [\033[36mNO\033[0m]\n",32);
-            write(1,"\n\n>",3);
+            write(1,"\n\n>\033[?25h",9);
         }
         else if(lenfordialog==3 && tolower(inputfordialog[0])=='y' && tolower(inputfordialog[1])=='e' && tolower(inputfordialog[2])=='s'){
-            slowlyoutput(">\033[36mAlrightt, Let's see what you got >:)\033[0m\0");
+            slowlyoutput("\033[?25l>\033[36mAlrightt, Let's see what you got >:)\033[0m");
             sleep(1);
             return;
         }
         else if(lenfordialog==2 && tolower(inputfordialog[0])=='n' && tolower(inputfordialog[1])=='o'){
-            slowlyoutput(">\033[36mI knew you are a coward!\033[0m");
+            slowlyoutput("\033[?25l>\033[36mI knew you are a coward!\033[0m\033[?25h");
             exit(0);
         }
         else{
-            slowlyoutput(">\033[36mUhhh.. write \033[0m[\033[36m?\033[0m]\033[36m to see what you can write...\033[0m\n");
-            write(1,">",2);
+            slowlyoutput("\033[?25l>\033[36mUhhh.. write \033[0m[\033[36m?\033[0m]\033[36m to see what you can write...\033[0m\n");
+            write(1,">\033[?25h",8);
         }
     }
     while(1);
@@ -406,26 +211,24 @@ int main() {
 
     dialogforfun();
 
-
     while(startinggame()==-1){
         highestpoint=(totalpoints > highestpoint ? totalpoints : highestpoint);
         totalpoints=0;
-        printf("\033[?25h");
         restore_terminal();
-        printf("Lil bro, you need to delete the game HAHAHAHAHA\nWanna lose again? [YES/NO]:");
+        slowlyoutput(">\033[36mAs expected.. Another loser!\033[0m\n>\033[36mWanna try and lose again? \033[0m[\033[36mYES\033[0m/\033[36mNO\033[0m]\n>\033[?25h");
         do{
             lengthofinput=customgetline(input);
             if(lengthofinput==2 && tolower(input[0])=='n' && tolower(input[1])=='o'){
-                printf("Bye bye Lil bro!!!");
+                slowlyoutput("\033[?25l>\033[36mBye bye Lil bro!!!\033[0m\033[?25h");
                 return 0;
             }
             else if(lengthofinput==3 && tolower(input[0])=='y' && tolower(input[1])=='e' && tolower(input[2])=='s'){
-                printf("Hmm interesting..\n");
+                slowlyoutput("\033[?25l>\033[36mHmm interesting..\033[0m\n");
                 sleep(1);
                 break;
             }
             else{
-                printf("\033[31m\nYou are dumb for sure...\n\033[0m\nWanna lose again? [YES/NO]:");
+                slowlyoutput("\033[?25l\n>\033[31mReally? Just write Yes\033[0m/\033[31mNo...\033[0m\n\n>\033[36mWanna try and lose again? \033[0m[\033[36mYES\033[0m/\033[36mNO\033[0m]\n>\033[?25h");
             }
         }
         while(1);
