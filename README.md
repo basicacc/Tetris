@@ -7,7 +7,7 @@ Reminder: Only available for Linux
 ### (32-bit)
 Note: I wish it will be supported by all systems
 ```bash
-nasm -f elf32 rawchar.s -o build/rawcharlinux.o
-gcc -m32 -c main.c -o build/main.o
+nasm -f elf32 Scripts/rawchar.s -o build/rawcharlinux.o
+gcc -m32 -c Scripts/main.c -o build/main.o
 gcc -m32 -no-pie build/* -o program
 ```
