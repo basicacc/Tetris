@@ -102,6 +102,8 @@ void movelinesdown(int height){
                             grid[z][k]=" ";
                         }
                     }
+                    displayboard();
+                    usleep(100000);
                     startofpiece=-1;
                     endofpiece=-1;
                     end=0;

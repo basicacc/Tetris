@@ -222,10 +222,9 @@ int main() {
     while(startinggame()==-1){  //Till game is active (Always return -1)
         highestpoint=(totalpoints > highestpoint ? totalpoints : highestpoint);
         totalpoints=0;
-        restore_terminal(); //restoring so we can accept input in tradition way
-
         //check if player wants to play again.
         slowlyoutput(">\033[36mAs expected.. Another loser!\033[0m\n>\033[36mWanna try and lose again? \033[0m[\033[36mYES\033[0m/\033[36mNO\033[0m]\n>\033[?25h");
+        restore_terminal(); //restoring so we can accept input in tradition way
         do{
             lengthofinput=customgetline(input);
             if(lengthofinput==2 && tolower(input[0])=='n' && tolower(input[1])=='o'){
