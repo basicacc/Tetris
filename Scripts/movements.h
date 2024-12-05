@@ -97,8 +97,10 @@ void movelinesdown(int height){
             for (int j=0;j<WIDTH;j++){
                 if(startofpiece!=1 && endofpiece!=-1){
                     for(int k=startofpiece;k<=endofpiece;k++){
-                        grid[i+1][k]=grid[i][k];
-                        grid[i][k]=" ";
+                        for(int z=i;z<HEIGHT && grid[z+1][k]==" ";z++){
+                            grid[z+1][k]=grid[z][k];
+                            grid[z][k]=" ";
+                        }
                     }
                     startofpiece=-1;
                     endofpiece=-1;
